@@ -28,10 +28,10 @@ Este documento serve como a "fonte da verdade" para o progresso do desenvolvimen
     - [x] Sincronização de limpeza no banco de dados
 
 ## 🌐 Fase 3: API REST (Backend)
-- [ ] Autenticação:
-    - [ ] Registro do primeiro usuário (Setup inicial)
-    - [ ] Login com JWT
-    - [ ] Middleware de proteção de rotas
+- [x] Autenticação:
+    - [x] Registro do primeiro usuário (Setup inicial)
+    - [x] Login com JWT
+    - [x] Middleware de proteção de rotas
 - [ ] Módulo de Câmeras:
     - [ ] CRUD completo (Create, Read, Update, Delete)
     - [ ] Início/Parada manual de gravação

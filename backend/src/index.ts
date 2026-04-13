@@ -4,8 +4,15 @@ import { config } from './config';
 import { Go2rtcManager } from './services/go2rtc';
 import { StreamManager } from './services/stream-manager';
 import { StorageCleanup } from './services/storage-cleanup';
+import authRoutes from './modules/auth/auth.routes';
 
 const app = express();
+
+// Middlewares globais
+app.use(express.json());
+
+// Rotas da API
+app.use('/api/auth', authRoutes);
 
 // Initialize the database and run migrations before doing anything else
 runMigrations();
