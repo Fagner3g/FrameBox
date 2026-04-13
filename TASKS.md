@@ -23,9 +23,9 @@ Este documento serve como a "fonte da verdade" para o progresso do desenvolvimen
     - [x] Geração de HLS Live (segmentos de 2s)
     - [x] Geração de MP4 contínuo (segmentado por hora)
     - [x] Watchdog para auto-restart do stream
-- [ ] Implementar `StorageCleanup`:
-    - [ ] Job diário para remover arquivos antigos (retenção)
-    - [ ] Sincronização de limpeza no banco de dados
+- [x] Implementar `StorageCleanup`:
+    - [x] Job diário para remover arquivos antigos (retenção)
+    - [x] Sincronização de limpeza no banco de dados
 
 ## 🌐 Fase 3: API REST (Backend)
 - [ ] Autenticação:

@@ -3,6 +3,7 @@ import { runMigrations } from './database/migrator';
 import { config } from './config';
 import { Go2rtcManager } from './services/go2rtc';
 import { StreamManager } from './services/stream-manager';
+import { StorageCleanup } from './services/storage-cleanup';
 
 const app = express();
 
@@ -15,6 +16,9 @@ app.get('/', (req, res) => {
 
 app.listen(config.PORT, async () => {
   console.log(`✅ FrameBox Backend rodando na porta ${config.PORT}`);
+  
+  // Iniciar CronJobs (Limpeza de Disco)
+  StorageCleanup.getInstance().startJob();
   
   // Iniciar o processo do go2rtc (Ponte DVRIP -> RTSP)
   await Go2rtcManager.getInstance().start();
