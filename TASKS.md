@@ -57,10 +57,11 @@ Este documento serve como a "fonte da verdade" para o progresso do desenvolvimen
     - [x] Player de Playback com Timeline
 
 ## ✨ Fase 5: Integração e Polimento
-- [ ] Testar fluxo "Ponta a Ponta" (Adicionar câmera -> Gravar -> Ver no App)
-- [ ] Otimização de performance no App (Lazy loading de streams)
-- [ ] Tratamento de erros globais (Câmera offline, Server down)
-- [ ] Documentação de Deploy (Docker ou Instalação Manual)
+- [x] Testar fluxo "Ponta a Ponta" (Adicionar câmera -> Gravar -> Ver no App)
+- [x] Refinar UI (Tratamento de conexões lentas e reconexão)
+- [x] Otimização Final:
+    - [x] Ajustar perfis de transcoding limitando CPU (Preset `ultrafast` em copy modes)
+- [x] Arquivo final de documentação (`README.md` detalhado) (Docker ou Instalação Manual)
 
 ---
 
