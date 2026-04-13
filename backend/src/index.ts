@@ -2,6 +2,7 @@ import express from 'express';
 import { runMigrations } from './database/migrator';
 import { config } from './config';
 import { Go2rtcManager } from './services/go2rtc';
+import { StreamManager } from './services/stream-manager';
 
 const app = express();
 
@@ -15,6 +16,9 @@ app.get('/', (req, res) => {
 app.listen(config.PORT, async () => {
   console.log(`✅ FrameBox Backend rodando na porta ${config.PORT}`);
   
-  // Iniciar o processo do go2rtc
+  // Iniciar o processo do go2rtc (Ponte DVRIP -> RTSP)
   await Go2rtcManager.getInstance().start();
+  
+  // Iniciar a gravação (FFmpeg) de todas as câmeras habilitadas
+  StreamManager.getInstance().startAllActive();
 });

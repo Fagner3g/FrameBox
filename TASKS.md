@@ -17,12 +17,12 @@ Este documento serve como a "fonte da verdade" para o progresso do desenvolvimen
     - [x] Iniciar/parar processo go2rtc como child process
     - [x] Gerar `go2rtc.yaml` dinamicamente a partir das câmeras no banco
     - [x] Health check via API go2rtc (`localhost:1984`)
-- [ ] Implementar `StreamManager`:
-    - [ ] Lógica de spawn do processo FFmpeg
-    - [ ] Consumir RTSP do go2rtc (`rtsp://localhost:8554/camera-{id}`)
-    - [ ] Geração de HLS Live (segmentos de 2s)
-    - [ ] Geração de MP4 contínuo (segmentado por hora)
-    - [ ] Watchdog para auto-restart do stream
+- [x] Implementar `StreamManager`:
+    - [x] Lógica de spawn do processo FFmpeg
+    - [x] Consumir RTSP do go2rtc (`rtsp://localhost:8554/camera-{id}`)
+    - [x] Geração de HLS Live (segmentos de 2s)
+    - [x] Geração de MP4 contínuo (segmentado por hora)
+    - [x] Watchdog para auto-restart do stream
 - [ ] Implementar `StorageCleanup`:
     - [ ] Job diário para remover arquivos antigos (retenção)
     - [ ] Sincronização de limpeza no banco de dados
