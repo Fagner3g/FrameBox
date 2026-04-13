@@ -1,0 +1,34 @@
+# Dependências (Node)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Variáveis de Ambiente
+.env
+.env.local
+
+# Builds e Compilados
+dist/
+build/
+out/
+.next/
+
+# Binários baixados dinamicamente
+backend/bin/
+go2rtc/
+go2rtc.zip
+
+# Armazenamento (Não commitar gravações e streams de vídeo)
+storage/
+
+# Arquivos do SO
+.DS_Store
+Thumbs.db
+
+# Históricos e testes (Opcional - criados localmente)
+test_results.md
+snapshot.jpg
+snapshot_test.jpg
+test.js
