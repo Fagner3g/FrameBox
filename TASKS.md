@@ -32,10 +32,10 @@ Este documento serve como a "fonte da verdade" para o progresso do desenvolvimen
     - [x] Registro do primeiro usuário (Setup inicial)
     - [x] Login com JWT
     - [x] Middleware de proteção de rotas
-- [ ] Módulo de Câmeras:
-    - [ ] CRUD completo (Create, Read, Update, Delete)
-    - [ ] Início/Parada manual de gravação
-    - [ ] Endpoint de Snapshot (gerar JPEG via FFmpeg)
+- [x] Módulo de Câmeras:
+    - [x] CRUD completo (Create, Read, Update, Delete)
+    - [x] Início/Parada manual de gravação
+    - [x] Endpoint de Snapshot (gerar JPEG via FFmpeg)
 - [ ] Módulo de Gravações:
     - [ ] Listagem filtrada por câmera e data
     - [ ] Stream de arquivo estático (.mp4) com suporte a Range
