@@ -48,9 +48,9 @@ Este documento serve como a "fonte da verdade" para o progresso do desenvolvimen
 - [x] UI/UX & Componentes:
     - [x] Criar Design System básico (cores, tipografia)
     - [x] Componente `CameraCard` (Preview + Status)
-    - [ ] Componente `VideoPlayer` (HLS e MP4)
-- [ ] Telas:
-    - [ ] Tela de Login/Configuração do Servidor
+    - [x] Componente `VideoPlayer` (HLS e MP4)
+- [x] Telas:
+    - [x] Tela de Login/Configuração do Servidor
     - [ ] Dashboard (Grid de câmeras ao vivo)
     - [ ] Visualização Fullscreen (Live)
     - [ ] Galeria de Gravações (Calendário + Lista)
