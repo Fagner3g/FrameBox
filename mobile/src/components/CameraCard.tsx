@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
 import { colors } from '../theme/colors';
+import { AuthContext } from '../context/AuthContext';
 
 interface CameraCardProps {
   id: string;
@@ -13,13 +14,14 @@ interface CameraCardProps {
 
 export default function CameraCard({ name, status, recording, snapshotUrl, onPress }: CameraCardProps) {
   const [imgError, setImgError] = useState(false);
+  const { token } = useContext(AuthContext);
 
   return (
     <Pressable onPress={onPress} style={({pressed}) => [styles.card, pressed && styles.cardPressed]}>
       <View style={styles.imageContainer}>
         {!imgError ? (
           <Image
-            source={{ uri: snapshotUrl }}
+            source={{ uri: snapshotUrl, headers: { Authorization: `Bearer ${token}` } }}
             style={styles.image}
             onError={() => setImgError(true)}
             resizeMode="cover"

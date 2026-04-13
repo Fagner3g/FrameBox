@@ -51,10 +51,10 @@ Este documento serve como a "fonte da verdade" para o progresso do desenvolvimen
     - [x] Componente `VideoPlayer` (HLS e MP4)
 - [x] Telas:
     - [x] Tela de Login/Configuração do Servidor
-    - [ ] Dashboard (Grid de câmeras ao vivo)
-    - [ ] Visualização Fullscreen (Live)
-    - [ ] Galeria de Gravações (Calendário + Lista)
-    - [ ] Player de Playback com Timeline
+    - [x] Dashboard (Grid de câmeras ao vivo)
+    - [x] Visualização Fullscreen (Live)
+    - [x] Galeria de Gravações (Calendário + Lista)
+    - [x] Player de Playback com Timeline
 
 ## ✨ Fase 5: Integração e Polimento
 - [ ] Testar fluxo "Ponta a Ponta" (Adicionar câmera -> Gravar -> Ver no App)
