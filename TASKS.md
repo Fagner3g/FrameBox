@@ -36,10 +36,10 @@ Este documento serve como a "fonte da verdade" para o progresso do desenvolvimen
     - [x] CRUD completo (Create, Read, Update, Delete)
     - [x] Início/Parada manual de gravação
     - [x] Endpoint de Snapshot (gerar JPEG via FFmpeg)
-- [ ] Módulo de Gravações:
-    - [ ] Listagem filtrada por câmera e data
-    - [ ] Stream de arquivo estático (.mp4) com suporte a Range
-    - [ ] Endpoint de calendário (datas com vídeo disponível)
+- [x] Módulo de Gravações:
+    - [x] Listagem filtrada por câmera e data
+    - [x] Stream de arquivo estático (.mp4) com suporte a Range
+    - [x] Endpoint de calendário (datas com vídeo disponível)
 
 ## 📱 Fase 4: App Mobile (Expo)
 - [ ] Setup Inicial:

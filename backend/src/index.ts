@@ -6,6 +6,7 @@ import { StreamManager } from './services/stream-manager';
 import { StorageCleanup } from './services/storage-cleanup';
 import authRoutes from './modules/auth/auth.routes';
 import cameraRoutes from './modules/cameras/camera.routes';
+import recordingRoutes from './modules/recordings/recording.routes';
 import { authMiddleware } from './modules/auth/auth.middleware';
 
 const app = express();
@@ -16,6 +17,10 @@ app.use(express.json());
 // Rotas da API
 app.use('/api/auth', authRoutes);
 app.use('/api/cameras', authMiddleware, cameraRoutes);
+app.use('/api/recordings', authMiddleware, recordingRoutes);
+
+// Servidor de estáticos abertos para o HLS streaming (ao vivo) local network
+app.use('/live', express.static(config.LIVE_PATH));
 
 // Initialize the database and run migrations before doing anything else
 runMigrations();
