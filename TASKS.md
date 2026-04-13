@@ -11,12 +11,12 @@ Este documento serve como a "fonte da verdade" para o progresso do desenvolvimen
 - [x] Validar FFmpeg (`ffmpeg-static` via npm) já instalado
 
 ## 🗄️ Fase 2: Backend Core & Banco de Dados
-- [ ] Implementar Singleton de conexão com SQLite (`better-sqlite3`)
-- [ ] Criar tabelas: `cameras` (com campos DVRIP), `recordings`, `users`
-- [ ] Implementar `Go2rtcManager`:
-    - [ ] Iniciar/parar processo go2rtc como child process
-    - [ ] Gerar `go2rtc.yaml` dinamicamente a partir das câmeras no banco
-    - [ ] Health check via API go2rtc (`localhost:1984`)
+- [x] Implementar Singleton de conexão com SQLite (`better-sqlite3`)
+- [x] Criar tabelas: `cameras` (com campos DVRIP), `recordings`, `users`
+- [x] Implementar `Go2rtcManager`:
+    - [x] Iniciar/parar processo go2rtc como child process
+    - [x] Gerar `go2rtc.yaml` dinamicamente a partir das câmeras no banco
+    - [x] Health check via API go2rtc (`localhost:1984`)
 - [ ] Implementar `StreamManager`:
     - [ ] Lógica de spawn do processo FFmpeg
     - [ ] Consumir RTSP do go2rtc (`rtsp://localhost:8554/camera-{id}`)
