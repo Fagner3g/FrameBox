@@ -72,8 +72,9 @@ Construir do zero nos dá:
 | **Gravação** | FFmpeg (child process) | Padrão da indústria para RTSP → HLS/MP4 |
 | **Banco de dados** | SQLite (via better-sqlite3) | Zero config, perfeito para metadados de câmeras e gravações |
 | **Autenticação** | JWT | Segurança simples e stateless |
-| **App Mobile** | React Native (Expo) | Cross-platform, DX excelente |
-| **Player de vídeo** | react-native-video | Suporte nativo a HLS no iOS (AVFoundation) e Android (ExoPlayer) |
+| **App Mobile** | React Native (CLI/Bare) | Controle total sobre os módulos nativos para lidar com players pesados de vídeo |
+| **Player de vídeo** | react-native-video | Suporte total a codecs (AVFoundation no iOS e ExoPlayer no Android) |
+| **Navegação**| React Navigation | Padrão da indústria para fluxos complexos e tabs nativas |
 | **Linguagem** | TypeScript | Type safety em ambos os projetos |
 
 ---

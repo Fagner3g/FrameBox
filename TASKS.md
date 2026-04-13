@@ -41,13 +41,13 @@ Este documento serve como a "fonte da verdade" para o progresso do desenvolvimen
     - [x] Stream de arquivo estático (.mp4) com suporte a Range
     - [x] Endpoint de calendário (datas com vídeo disponível)
 
-## 📱 Fase 4: App Mobile (Expo)
-- [ ] Setup Inicial:
-    - [ ] Inicializar projeto Expo com TypeScript
-    - [ ] Configurar Expo Router e Navigation
-- [ ] UI/UX & Componentes:
-    - [ ] Criar Design System básico (cores, tipografia)
-    - [ ] Componente `CameraCard` (Preview + Status)
+## 📱 Fase 4: App Mobile (React Native CLI)
+- [x] Setup Inicial:
+    - [x] Inicializar projeto Bare React Native com TypeScript (`npx @react-native-community/cli init`)
+    - [x] Configurar React Navigation (Stack/Tabs) e dependências nativas
+- [x] UI/UX & Componentes:
+    - [x] Criar Design System básico (cores, tipografia)
+    - [x] Componente `CameraCard` (Preview + Status)
     - [ ] Componente `VideoPlayer` (HLS e MP4)
 - [ ] Telas:
     - [ ] Tela de Login/Configuração do Servidor
