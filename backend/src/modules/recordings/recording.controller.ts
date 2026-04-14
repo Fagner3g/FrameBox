@@ -61,7 +61,11 @@ export class RecordingController {
         const filePath = path.join(camDir, file);
         const stats = fs.statSync(filePath);
 
-        // Extrai a hora: 17 do arquivo 2026-04-13_17.mp4
+        // Filtra gravações que falharam/foram interrompidas (menos de 100KB)
+        // Isso remove o "lixo" gerado por tentativas de conexão falhas.
+        if (stats.size < 102400) continue; 
+
+        // Extrai a hora: 17 do arquivo 2026-04-14_17.mp4
         const hh = file.split("_")[1].replace(".mp4", "");
 
         recordings.push({
@@ -71,7 +75,7 @@ export class RecordingController {
           hour: hh,
           size_bytes: stats.size,
           created_at: stats.mtime,
-          url: `/api/recordings/${cameraId}/stream/${file}` // Link que o player no App vai bater para baixar o vídeo
+          url: `/api/recordings/${cameraId}/stream/${file}` 
         });
       }
 

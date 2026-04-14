@@ -254,55 +254,61 @@ export class CameraController {
           client.bind(() => {
             client.setBroadcast(true);
             
-            // f0 00 ... fa 05 ... (Probe DVRIP - Exatamente 20 bytes)
-            const wakeupPacket = Buffer.from("ff000000000000000000000000fa0500000000", "hex");
+            // 1. DVRIP Discovery Probe (20 bytes exatos)
+            const dvripPacket = Buffer.from("ff00000000000000000000000000fa0500000000", "hex");
+            // 2. WS-Discovery (ONVIF/Discovery padrão porta 3702)
+            const wsDiscovery = Buffer.from('<?xml version="1.0" encoding="UTF-8"?><e:Envelope xmlns:e="http://www.w3.org/2003/05/soap-envelope" xmlns:w="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:d="http://schemas.xmlsoap.org/ws/2004/08/discovery"><e:Header><w:MessageID>uuid:49906669-e7d3-11e7-8106-28c2dd045620</w:MessageID><w:To>urn:schemas-xmlsoap-org:ws:2004:08:discovery</w:To><w:Action>http://schemas.xmlsoap.org/ws/2004/08/discovery/Probe</w:Action></e:Header><e:Body><d:Probe/></e:Body></e:Envelope>');
+            // 3. NULL/Heartbeat
             const nullPacket = Buffer.from([0x00, 0x00, 0x00, 0x00]);
             
             const sendPings = () => {
-              // Grita nas duas portas conhecidas (Discovery e P2P Bateria)
-              [34569, 32108].forEach(port => {
-                client.send(wakeupPacket, port, camera.ip);
-                client.send(wakeupPacket, port, "255.255.255.255");
+              console.log(`[UDP] Bombardeando portas com ${dvripPacket.length} bytes...`);
+              // Disparo em massa em todas as portas prováveis de Wake-up
+              [34569, 32108, 10000, 3702, 32100].forEach(port => {
+                client.send(dvripPacket, port, "255.255.255.255");
+                client.send(dvripPacket, port, camera.ip);
+                if (port === 3702) {
+                  client.send(wsDiscovery, 3702, "239.255.255.250"); // Endereço Multicast ONVIF
+                  client.send(wsDiscovery, 3702, "255.255.255.255");
+                }
                 client.send(nullPacket, port, camera.ip);
               });
             };
 
-            // Envia 4 rodadas de ping (0, 300, 600, 900ms)
-            sendPings();
-            setTimeout(sendPings, 300);
-            setTimeout(sendPings, 600);
-            setTimeout(sendPings, 900);
+            // Envia 5 rodadas de "bombardeio" UDP para acordar o hardware
+            for(let i=0; i<5; i++) {
+              setTimeout(sendPings, i * 400);
+            }
             
-            setTimeout(() => client.close(), 1500);
+            setTimeout(() => client.close(), 2500);
           });
           
-          console.log(`[WebRTC] Enviado pacote de WAKE UP (Acordar) agressivo para a câmera ${camera.ip}...`);
+          console.log(`[WebRTC] Bomba de WAKE UP (Cluster Bomb) enviada para ${camera.ip}...`);
           
           // Validação de Porta TCP 34567 (Check se a câmera abriu o canal de vídeo)
-          // Câmeras solares são lentas, damos até 20 segundos de fôlego.
+          // Timeout estendido para 30 segundos (limite para sono profundo solar)
           const net = require("node:net");
           let isReady = false;
           const startTime = Date.now();
           
-          while (!isReady && (Date.now() - startTime) < 20000) {
+          while (!isReady && (Date.now() - startTime) < 30000) {
             isReady = await new Promise((resolve) => {
               const socket = new net.Socket();
-              socket.setTimeout(1000);
+              socket.setTimeout(1200);
               socket.on("connect", () => { socket.destroy(); resolve(true); });
               socket.on("error", () => { socket.destroy(); resolve(false); });
               socket.on("timeout", () => { socket.destroy(); resolve(false); });
               socket.connect(34567, camera.ip);
             });
-            if (!isReady) {
-              // Se ainda não deu, espera um pouco e tenta de novo
-              await new Promise(r => setTimeout(r, 800));
-            }
+            if (!isReady) await new Promise(r => setTimeout(r, 600));
           }
 
           if (isReady) {
             console.log(`[WebRTC] Câmera ${camera.ip} ACORDOU e porta 34567 está aberta!`);
+            // Aguarda 1.5s extra para o servidor interno da câmera (RTSP/DVRIP) se estabilizar após abrir a porta
+            await new Promise(r => setTimeout(r, 1500));
           } else {
-            console.warn(`[WebRTC] Câmera ${camera.ip} não respondeu na porta 34567 após 10s.`);
+            console.warn(`[WebRTC] Câmera ${camera.ip} não respondeu na porta 34567 após 20s.`);
           }
         } catch (err) {
           console.error("Falha ao enviar Wake Up packet:", err);
