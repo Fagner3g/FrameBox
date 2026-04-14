@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, StyleSheet, FlatList, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { colors } from '../theme/colors';
 import { AuthContext } from '../context/AuthContext';
 import VideoPlayer from '../components/VideoPlayer';
@@ -10,6 +10,9 @@ export default function CameraDetail({ route, navigation }: any) {
 
   const liveUrl = `${serverUrl}/live/${cameraId}/stream.m3u8`;
 
+  // WebRTC via proxy Express (porta 3000) → go2rtc interno — latência < 1s para live
+  const webrtcUrl = `${serverUrl}/api/cameras/${cameraId}/webrtc`;
+
   const [currentUrl, setCurrentUrl] = useState(liveUrl);
   const [isLive, setIsLive] = useState(true);
 
@@ -18,7 +21,7 @@ export default function CameraDetail({ route, navigation }: any) {
   const [recordings, setRecordings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Busca calendário das datas que possuem gravações
+  // Busca calendário
   useEffect(() => {
     async function fetchCalendar() {
       try {
@@ -28,7 +31,7 @@ export default function CameraDetail({ route, navigation }: any) {
         if (res.ok) {
           const dates = await res.json();
           setCalendar(dates);
-          if (dates.length > 0) setSelectedDate(dates[0]); // Seleciona o log mais recente que vier primeiro
+          if (dates.length > 0) setSelectedDate(dates[0]); 
         }
       } catch (err) {
         console.error("Falha ao buscar calendario", err);
@@ -36,11 +39,10 @@ export default function CameraDetail({ route, navigation }: any) {
         setLoading(false);
       }
     }
-
     fetchCalendar();
   }, [serverUrl, cameraId, token]);
 
-  // Se o selecionador de datas mudou, busca a listagem daquelas 24 horas.
+  // Busca recordings da data
   useEffect(() => {
     async function fetchRecordings() {
       if (!selectedDate) return;
@@ -64,26 +66,61 @@ export default function CameraDetail({ route, navigation }: any) {
   };
 
   const handlePlayRecording = (filename: string) => {
-    // Nós podemos servir streaming com query token mas react-native-video aceita headers em algumas versões via modifier.
-    // Como estamos na rede local / JWT backend, vamos embutir ou fazer fetch direto. 
-    // Assumimos que route /stream envia Partial 206! 
-    // Obs: A rota do backend /api/recordings/:id/stream/:filename está blindada por token. O RN Video Player usa `serverUrl` apenas se ele injetar Headers! 
-    // Pra contornar limites em players iOS sem hook custom do RNVideo, geramos essa URL e mandamos para o player, que seria ideal se recebesse headers. RN Video Source possui `headers: {Authorization:...}`
     const recUrl = `${serverUrl}/api/recordings/${cameraId}/stream/${filename}`;
     setCurrentUrl(recUrl);
     setIsLive(false);
   };
 
+  const handleDelete = () => {
+    Alert.alert(
+      "Excluir Câmera",
+      `Tem certeza que deseja excluir '${name}' do sistema NVR permanentemente?`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        { 
+          text: "Excluir", 
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const res = await fetch(`${serverUrl}/api/cameras/${cameraId}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              if (res.ok) {
+                navigation.goBack();
+              } else {
+                Alert.alert("Erro", "Não foi possível excluir");
+              }
+            } catch (err) {
+              Alert.alert("Erro de Rede", "Falha ao se comunicar com o servidor");
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backIcon}>{"<"} </Text>
+        <View style={styles.headerLeft}>
+          <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Text style={styles.backIcon}>{"<"} </Text>
+          </Pressable>
+          <Text style={styles.title} numberOfLines={1}>{name}</Text>
+        </View>
+        <Pressable onPress={handleDelete} style={styles.deleteButton}>
+          <Text style={styles.deleteText}>Excluir</Text>
         </Pressable>
-        <Text style={styles.title}>{name}</Text>
       </View>
 
-      <VideoPlayer streamUrl={currentUrl} isLive={isLive} />
+      <VideoPlayer
+        streamUrl={currentUrl}
+        isLive={isLive}
+        hlsJsUrl={`${serverUrl}/public/hls.min.js`}
+        webrtcUrl={isLive ? webrtcUrl : undefined}
+        authToken={token ?? undefined}
+      />
 
       <View style={styles.controlsBar}>
          <Pressable onPress={handlePlayLive} style={[styles.modeButton, isLive && styles.modeButtonActive]}>
@@ -158,9 +195,16 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
     paddingTop: 50,
     backgroundColor: colors.surface
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    paddingRight: 10
   },
   backButton: {
     paddingRight: 16,
@@ -173,7 +217,21 @@ const styles = StyleSheet.create({
   title: {
     color: colors.textWhite,
     fontSize: 20,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    flexShrink: 1
+  },
+  deleteButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255,50,50,0.1)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,50,50,0.4)',
+  },
+  deleteText: {
+    color: '#ff4d4d',
+    fontWeight: 'bold',
+    fontSize: 12
   },
   controlsBar: {
     padding: 16,

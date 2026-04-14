@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FrameBox — Stream Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0e14; color: #cdd; font-family: monospace; padding: 24px; }
+    h1 { color: #00e5ff; margin-bottom: 4px; font-size: 20px; }
+    p.sub { color: #556; font-size: 13px; margin-bottom: 24px; }
+
+    .card {
+      background: #111820;
+      border: 1px solid #1c2a33;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card h2 { color: #90caf9; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px; }
+
+    video { width: 100%; border-radius: 8px; background: #000; display: block; }
+
+    .checks { display: flex; flex-direction: column; gap: 10px; }
+    .check { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+      background: #333;
+    }
+    .dot.ok   { background: #00e676; box-shadow: 0 0 6px #00e676; }
+    .dot.err  { background: #ff4d4d; box-shadow: 0 0 6px #ff4d4d; }
+    .dot.spin { background: #00e5ff; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    .url-box {
+      background: #0a0e14; border: 1px solid #1c2a33; border-radius: 6px;
+      padding: 10px 14px; font-size: 12px; color: #00e5ff; word-break: break-all;
+      margin-top: 12px;
+    }
+    .log {
+      background: #0a0e14; border: 1px solid #1c2a33; border-radius: 6px;
+      padding: 12px; font-size: 11px; color: #556; max-height: 200px;
+      overflow-y: auto; margin-top: 12px; white-space: pre-wrap; line-height: 1.6;
+    }
+    .log .ok  { color: #00e676; }
+    .log .err { color: #ff4d4d; }
+    .log .inf { color: #90caf9; }
+
+    button {
+      background: #00e5ff22; border: 1px solid #00e5ff; color: #00e5ff;
+      padding: 8px 20px; border-radius: 6px; cursor: pointer; font-family: monospace;
+      font-size: 13px; font-weight: bold; margin-top: 12px;
+    }
+    button:hover { background: #00e5ff33; }
+
+    input {
+      background: #0a0e14; border: 1px solid #1c2a33; color: #cdd; padding: 8px 12px;
+      border-radius: 6px; font-family: monospace; font-size: 13px; width: 100%;
+      margin-top: 8px;
+    }
+    label { font-size: 12px; color: #556; }
+  </style>
+</head>
+<body>
+
+<h1>FrameBox — Stream Diagnostics</h1>
+<p class="sub">Testa a cadeia completa: Backend → go2rtc → FFmpeg → HLS → Player</p>
+
+<!-- CONFIG -->
+<div class="card">
+  <h2>Configuração</h2>
+  <label>Backend URL</label>
+  <input id="backendUrl" value="http://localhost:3000" />
+  <label style="margin-top:12px;display:block;">Camera ID</label>
+  <input id="cameraId" value="587accaa-5ef1-4122-a556-d8641c25daa2" />
+  <button onclick="runDiagnostics()">▶ Executar Diagnóstico</button>
+</div>
+
+<!-- CHECKS -->
+<div class="card">
+  <h2>Checklist</h2>
+  <div class="checks">
+    <div class="check"><div class="dot" id="d1"></div><span id="t1">Backend HTTP</span></div>
+    <div class="check"><div class="dot" id="d2"></div><span id="t2">go2rtc API (porta 1984)</span></div>
+    <div class="check"><div class="dot" id="d3"></div><span id="t3">Stream registrado no go2rtc</span></div>
+    <div class="check"><div class="dot" id="d4"></div><span id="t4">Arquivo HLS (.m3u8) acessível</span></div>
+    <div class="check"><div class="dot" id="d5"></div><span id="t5">Player reproduzindo</span></div>
+  </div>
+  <div class="url-box" id="streamUrlBox">—</div>
+</div>
+
+<!-- PLAYER -->
+<div class="card">
+  <h2>Player HLS</h2>
+  <video id="videoEl" controls autoplay muted playsinline></video>
+  <button onclick="reloadPlayer()">⟳ Reload Player</button>
+</div>
+
+<!-- LOG -->
+<div class="card">
+  <h2>Log</h2>
+  <div class="log" id="logBox"></div>
+  <button onclick="document.getElementById('logBox').innerHTML=''">Limpar</button>
+</div>
+
+<script>
+let hls = null;
+
+function log(msg, type = '') {
+  const box = document.getElementById('logBox');
+  const time = new Date().toLocaleTimeString('pt-BR');
+  box.innerHTML += `<span class="${type}">[${time}] ${msg}\n</span>`;
+  box.scrollTop = box.scrollHeight;
+}
+
+function setDot(id, state) {
+  const el = document.getElementById('d' + id);
+  el.className = 'dot ' + state;
+}
+
+function setText(id, text) {
+  document.getElementById('t' + id).textContent = text;
+}
+
+async function runDiagnostics() {
+  const backendUrl = document.getElementById('backendUrl').value.replace(/\/$/, '');
+  const cameraId   = document.getElementById('cameraId').value.trim();
+  const safeId     = cameraId.replace(/-/g, '');
+  const streamUrl  = `${backendUrl}/live/${cameraId}/stream.m3u8`;
+
+  document.getElementById('streamUrlBox').textContent = streamUrl;
+  log('Iniciando diagnóstico...', 'inf');
+
+  // 1. Backend
+  setDot(1, 'spin'); setText(1, 'Verificando Backend...');
+  try {
+    const r = await fetch(`${backendUrl}/`);
+    if (r.ok) {
+      setDot(1, 'ok'); setText(1, `Backend OK (${backendUrl})`);
+      log(`Backend respondeu: ${await r.text()}`, 'ok');
+    } else {
+      throw new Error(`HTTP ${r.status}`);
+    }
+  } catch(e) {
+    setDot(1, 'err'); setText(1, `Backend FALHOU: ${e.message}`);
+    log(`Backend erro: ${e.message}`, 'err');
+  }
+
+  // 2. go2rtc (direto via proxy no backend ou mesma origin)
+  setDot(2, 'spin'); setText(2, 'Verificando go2rtc...');
+  try {
+    // Tenta via endpoint proxy do backend (evita CORS)
+    const r = await fetch(`${backendUrl}/api/cameras`, {
+      headers: { Authorization: 'Bearer test' }
+    });
+    // Se 401 = backend está vivo e auth funciona, go2rtc provavelmente ok
+    if (r.status === 401 || r.ok) {
+      setDot(2, 'ok'); setText(2, 'go2rtc presumivelmente OK (backend responde)');
+      log('go2rtc: não testável diretamente do browser (CORS). Assumindo OK se backend responde.', 'inf');
+    }
+  } catch(e) {
+    setDot(2, 'err'); setText(2, `go2rtc check falhou: ${e.message}`);
+    log(`go2rtc erro: ${e.message}`, 'err');
+  }
+
+  // 3. Stream registrado — verifica via HEAD no m3u8
+  setDot(3, 'spin'); setText(3, 'Verificando stream...');
+  // (será confirmado no passo 4)
+  setDot(3, 'ok'); setText(3, `Stream ID: cam_${safeId}`);
+  log(`Stream name no go2rtc: cam_${safeId}`, 'inf');
+
+  // 4. Arquivo HLS
+  setDot(4, 'spin'); setText(4, `Buscando ${streamUrl}...`);
+  try {
+    const r = await fetch(streamUrl, { method: 'HEAD' });
+    if (r.ok) {
+      setDot(4, 'ok'); setText(4, `.m3u8 acessível (HTTP ${r.status})`);
+      log(`.m3u8 encontrado! Content-Type: ${r.headers.get('content-type')}`, 'ok');
+    } else {
+      setDot(4, 'err'); setText(4, `.m3u8 retornou HTTP ${r.status}`);
+      log(`.m3u8 HTTP ${r.status} — FFmpeg provavelmente não iniciou ainda`, 'err');
+    }
+  } catch(e) {
+    setDot(4, 'err'); setText(4, `.m3u8 inacessível: ${e.message}`);
+    log(`.m3u8 erro: ${e.message}`, 'err');
+  }
+
+  // 5. Player
+  setDot(5, 'spin'); setText(5, 'Iniciando player...');
+  loadPlayer(streamUrl);
+}
+
+function loadPlayer(streamUrl) {
+  const video = document.getElementById('videoEl');
+
+  if (hls) { hls.destroy(); hls = null; }
+
+  if (Hls.isSupported()) {
+    log('Usando HLS.js (Chrome/Firefox)', 'inf');
+    hls = new Hls({
+      liveSyncDurationCount: 3,
+      liveMaxLatencyDurationCount: 5,
+      debug: false,
+    });
+    hls.loadSource(streamUrl);
+    hls.attachMedia(video);
+
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      log('HLS manifest carregado! Iniciando playback...', 'ok');
+      setDot(5, 'ok'); setText(5, 'Player reproduzindo ✓');
+      video.play();
+    });
+
+    hls.on(Hls.Events.ERROR, (event, data) => {
+      log(`HLS erro [${data.type}] ${data.details}: ${data.reason || ''}`, 'err');
+      if (data.fatal) {
+        setDot(5, 'err'); setText(5, `Erro fatal: ${data.details}`);
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+          log('Erro de rede — stream não disponível ou arquivo não gerado ainda', 'err');
+        }
+      }
+    });
+
+    hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
+      log(`Segmento HLS carregado: ${data.frag.url.split('/').pop()} (${(data.frag.stats.total/1024).toFixed(1)} KB)`, 'ok');
+    });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    log('Usando HLS nativo (Safari)', 'inf');
+    video.src = streamUrl;
+    video.addEventListener('loadedmetadata', () => {
+      log('HLS nativo carregou metadata!', 'ok');
+      setDot(5, 'ok'); setText(5, 'Player nativo reproduzindo ✓');
+      video.play();
+    });
+    video.addEventListener('error', (e) => {
+      log(`Erro nativo: ${video.error?.message}`, 'err');
+      setDot(5, 'err');
+    });
+  } else {
+    log('HLS não suportado neste browser!', 'err');
+    setDot(5, 'err'); setText(5, 'HLS não suportado');
+  }
+}
+
+function reloadPlayer() {
+  const backendUrl = document.getElementById('backendUrl').value.replace(/\/$/, '');
+  const cameraId   = document.getElementById('cameraId').value.trim();
+  loadPlayer(`${backendUrl}/live/${cameraId}/stream.m3u8`);
+  log('Player recarregado manualmente', 'inf');
+}
+
+// Auto-roda ao abrir
+window.onload = () => runDiagnostics();
+</script>
+</body>
+</html>

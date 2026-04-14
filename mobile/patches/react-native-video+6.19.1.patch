@@ -1,0 +1,18 @@
+diff --git a/node_modules/react-native-video/ios/Video/RCTVideo.swift b/node_modules/react-native-video/ios/Video/RCTVideo.swift
+index 5f2f5f6..0ce1028 100644
+--- a/node_modules/react-native-video/ios/Video/RCTVideo.swift
++++ b/node_modules/react-native-video/ios/Video/RCTVideo.swift
+@@ -1237,6 +1237,13 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
+                     _pip?.setupPipController(_playerLayer)
+                 }
+             #endif
++            // Force a layout pass so AVPlayerLayer.frame gets correct bounds under
++            // Fabric/New Architecture (RN 0.85+). Without this, the layer may keep a
++            // zero or stale frame if layoutSubviews() ran before the layer existed.
++            DispatchQueue.main.async { [weak self] in
++                self?.setNeedsLayout()
++                self?.layoutIfNeeded()
++            }
+         }
+     }
+ 

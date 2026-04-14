@@ -9,6 +9,12 @@ export default function Dashboard({ navigation }: any) {
   const [cameras, setCameras] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [snapKey, setSnapKey] = useState(Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setSnapKey(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   const loadCameras = useCallback(async () => {
     try {
@@ -64,7 +70,7 @@ export default function Dashboard({ navigation }: any) {
               // Anexamos token via url fetch nativo ou query. 
               // O Snapshot não exige authorization se abrirmos furo ou podemos usar cache. Mas como a rota exige token:
               // Para images native fetch com auth headers:
-              snapshotUrl={`${serverUrl}/api/cameras/${cam.id}/snapshot?t=${Date.now()}`}
+              snapshotUrl={`${serverUrl}/api/cameras/${cam.id}/snapshot?t=${snapKey}`}
               onPress={() => navigation.navigate('CameraDetail', { cameraId: cam.id, name: cam.name })}
             />
           ))}

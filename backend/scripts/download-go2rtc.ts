@@ -79,6 +79,27 @@ function extractZip(zipPath: string, destPath: string) {
   }
 }
 
+async function downloadHlsJs() {
+  const publicDir = path.join(__dirname, '../public');
+  const destPath  = path.join(publicDir, 'hls.min.js');
+
+  if (fs.existsSync(destPath)) {
+    console.log('✅ hls.min.js já está em public/');
+    return;
+  }
+
+  if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
+
+  const url = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js';
+  console.log('🔽 Baixando hls.min.js...');
+  try {
+    await downloadFile(url, destPath);
+    console.log('✅ hls.min.js salvo em backend/public/');
+  } catch (err) {
+    console.warn('⚠️  Falha ao baixar hls.min.js (sem internet?). Player usará CDN como fallback.', err);
+  }
+}
+
 async function main() {
   if (!fs.existsSync(binDir)) {
     fs.mkdirSync(binDir, { recursive: true });
@@ -126,4 +147,4 @@ async function main() {
   }
 }
 
-main();
+main().then(() => downloadHlsJs());
